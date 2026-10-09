@@ -3,105 +3,271 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Test Case Generator</title>
+<title>ReqToTest</title>
 <style>
   :root {
-    --bg: #f8fafc; --card: #ffffff; --text: #0f172a; --muted: #64748b;
-    --border: #e2e8f0; --accent: #4f46e5; --accent-hover: #4338ca;
+    --bg: #f6f7fb; --card: #ffffff; --text: #0f172a; --muted: #64748b; --soft: #f1f5f9;
+    --border: #e5e9f2; --accent: #4f46e5; --accent2: #7c3aed; --accent-soft: #eef2ff;
     --high: #fee2e2; --high-t: #b91c1c; --med: #fef3c7; --med-t: #b45309;
-    --low: #dcfce7; --low-t: #15803d; --err: #b91c1c; --warn: #b45309;
-    --code-bg: #0f172a; --code-t: #e2e8f0;
+    --low: #dcfce7; --low-t: #15803d; --err: #dc2626; --warn: #b45309;
+    --code-bg: #0f172a; --code-t: #e2e8f0; --shadow: 0 1px 2px rgba(15,23,42,.04), 0 8px 24px rgba(15,23,42,.06);
+    --glow: rgba(99,102,241,.14);
   }
   @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #0b1020; --card: #131a2e; --text: #e5e7eb; --muted: #94a3b8;
-      --border: #25304d; --accent: #6366f1; --accent-hover: #818cf8;
+    :root:not([data-theme="light"]) {
+      --bg: #0a0f1e; --card: #121a30; --text: #e6e9f2; --muted: #93a0ba; --soft: #1a2340;
+      --border: #243052; --accent: #6366f1; --accent2: #8b5cf6; --accent-soft: #1b2250;
       --high: #4c1d1d; --high-t: #fca5a5; --med: #4a3410; --med-t: #fcd34d;
-      --low: #123524; --low-t: #86efac; --err: #fca5a5; --warn: #fcd34d;
-      --code-bg: #070b17; --code-t: #e5e7eb;
+      --low: #123524; --low-t: #86efac; --err: #f87171; --warn: #fcd34d;
+      --code-bg: #070b17; --code-t: #e5e7eb; --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25);
+      --glow: rgba(99,102,241,.18);
     }
   }
+  :root[data-theme="dark"] {
+    --bg: #0a0f1e; --card: #121a30; --text: #e6e9f2; --muted: #93a0ba; --soft: #1a2340;
+    --border: #243052; --accent: #6366f1; --accent2: #8b5cf6; --accent-soft: #1b2250;
+    --high: #4c1d1d; --high-t: #fca5a5; --med: #4a3410; --med-t: #fcd34d;
+    --low: #123524; --low-t: #86efac; --err: #f87171; --warn: #fcd34d;
+    --code-bg: #070b17; --code-t: #e5e7eb; --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25);
+    --glow: rgba(99,102,241,.18);
+  }
   * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
   body {
-    margin: 0; background: var(--bg); color: var(--text);
-    font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif;
+    margin: 0; color: var(--text); min-height: 100vh;
+    background: radial-gradient(900px 380px at 50% -120px, var(--glow), transparent), var(--bg);
+    font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif;
   }
-  main { max-width: 960px; margin: 0 auto; padding: 48px 20px 80px; }
-  h1 { font-size: 26px; margin: 0 0 4px; letter-spacing: -0.02em; }
-  .sub { color: var(--muted); margin: 0 0 28px; }
+  main { max-width: 980px; margin: 0 auto; padding: 28px 20px 96px; }
+
+  /* header + steps */
+  .top { display: flex; align-items: center; gap: 12px; margin-bottom: 26px; }
+  .logo {
+    width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center;
+    background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff;
+    box-shadow: 0 6px 16px rgba(99,102,241,.35);
+  }
+  .brand h1 { font-size: 19px; margin: 0; letter-spacing: -0.01em; line-height: 1.2; }
+  .brand p { margin: 0; color: var(--muted); font-size: 13px; }
+  .right { margin-left: auto; display: flex; gap: 8px; position: relative; align-items: center; }
+  .icon-btn {
+    width: 38px; height: 38px; padding: 0; display: grid; place-items: center;
+    background: var(--card); color: var(--text); border: 1px solid var(--border); border-radius: 11px;
+    box-shadow: none; font-size: 17px;
+  }
+  .icon-btn:hover:not(:disabled) { background: var(--soft); transform: none; box-shadow: none; }
+  #hbtn { height: 38px; padding: 0 14px; }
+  #hbtn em { font-style: normal; background: var(--accent-soft); color: var(--accent); border-radius: 999px; padding: 0 7px; margin-left: 6px; font-size: 12px; }
+  .steps { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+  .step {
+    display: flex; align-items: center; gap: 8px; padding: 6px 12px 6px 6px; border-radius: 999px;
+    background: var(--card); border: 1px solid var(--border); color: var(--muted); font-size: 13px; font-weight: 600;
+    transition: all .25s;
+  }
+  .step b {
+    width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 12px;
+    background: var(--soft); color: var(--muted); transition: all .25s;
+  }
+  .step.on { color: var(--text); border-color: var(--accent); }
+  .step.on b { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; }
+  .step.done b { background: var(--low); color: var(--low-t); }
+
+  /* history panel */
+  .panel {
+    position: absolute; top: 46px; right: 0; width: 360px; max-width: calc(100vw - 40px); z-index: 20;
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 16px 40px rgba(15,23,42,.18);
+    padding: 8px; max-height: 60vh; overflow: auto;
+  }
+  .panel[hidden] { display: none; }
+  .panel .ph { display: flex; align-items: center; justify-content: space-between; padding: 6px 8px 8px; font-weight: 700; font-size: 14px; }
+  .run { display: flex; align-items: center; gap: 8px; padding: 9px 10px; border-radius: 10px; cursor: pointer; }
+  .run:hover { background: var(--soft); }
+  .run .info { flex: 1; min-width: 0; }
+  .run .rt { font-weight: 600; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .run .rm { color: var(--muted); font-size: 12.5px; }
+  .run .x { background: none; border: 0; box-shadow: none; color: var(--muted); padding: 4px 8px; font-size: 16px; border-radius: 8px; }
+  .run .x:hover:not(:disabled) { background: var(--high); color: var(--high-t); box-shadow: none; transform: none; }
+  .panel .none { padding: 18px 10px; text-align: center; color: var(--muted); font-size: 14px; }
+
+  /* cards & inputs */
   .card {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 14px; padding: 20px;
+    background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+    padding: 20px; box-shadow: var(--shadow);
   }
-  textarea, input[type=text] {
-    width: 100%; padding: 12px 14px;
-    border: 1px solid var(--border); border-radius: 10px;
-    background: transparent; color: inherit; font: inherit;
+  .card h2 { margin: 0 0 4px; font-size: 16px; }
+  textarea, input[type=text], input[type=search] {
+    width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 12px;
+    background: var(--bg); color: inherit; font: inherit; transition: border-color .15s, box-shadow .15s;
   }
-  textarea { min-height: 160px; resize: vertical; padding: 14px; }
-  textarea:focus, select:focus, input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
-  .row { display: flex; gap: 12px; align-items: center; margin-top: 14px; flex-wrap: wrap; }
-  .row.first { margin-top: 0; }
+  textarea { min-height: 150px; resize: vertical; line-height: 1.6; }
+  textarea:focus, input:focus, select:focus {
+    outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px var(--glow);
+  }
+  .meta-line { display: flex; justify-content: space-between; color: var(--muted); font-size: 12.5px; margin-top: 6px; }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; align-items: center; }
+  .chips > span { color: var(--muted); font-size: 13px; }
+  .chip {
+    padding: 4px 11px; border-radius: 999px; font-size: 13px; font-weight: 500; cursor: pointer;
+    background: var(--accent-soft); color: var(--accent); border: 1px solid transparent; box-shadow: none;
+  }
+  .chip:hover { border-color: var(--accent); background: var(--accent-soft); transform: none; box-shadow: none; }
+  .row { display: flex; gap: 10px; align-items: center; margin-top: 16px; flex-wrap: wrap; }
+  .row.first { margin-top: 12px; }
   .spacer { flex: 1; }
   select {
-    padding: 9px 12px; border-radius: 10px; border: 1px solid var(--border);
-    background: transparent; color: inherit; font: inherit; max-width: 220px;
+    padding: 9px 12px; border-radius: 12px; border: 1px solid var(--border);
+    background: var(--bg); color: inherit; font: inherit; max-width: 220px; cursor: pointer;
   }
-  select option { color: #0f172a; }
+
+  /* buttons */
   button {
-    border: 0; border-radius: 10px; padding: 10px 18px; font: inherit; font-weight: 600;
-    cursor: pointer; background: var(--accent); color: #fff; transition: background .15s;
-    white-space: nowrap;
+    border: 0; border-radius: 12px; padding: 10px 18px; font: inherit; font-weight: 600; cursor: pointer;
+    color: #fff; background: linear-gradient(135deg, var(--accent), var(--accent2)); white-space: nowrap;
+    box-shadow: 0 6px 16px rgba(99,102,241,.28); transition: transform .12s, box-shadow .12s, opacity .12s;
   }
-  button:hover:not(:disabled) { background: var(--accent-hover); }
-  button:disabled { opacity: .55; cursor: not-allowed; }
+  button:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 10px 22px rgba(99,102,241,.35); }
+  button:active:not(:disabled) { transform: translateY(0); }
+  button:disabled { opacity: .55; cursor: not-allowed; box-shadow: none; }
+  button:focus-visible { outline: 3px solid var(--glow); outline-offset: 2px; }
   button.ghost {
-    background: transparent; color: var(--text); border: 1px solid var(--border);
+    background: var(--card); color: var(--text); border: 1px solid var(--border); box-shadow: none;
   }
-  button.ghost:hover:not(:disabled) { background: var(--bg); }
-  .error { color: var(--err); margin-top: 14px; }
-  .warn { color: var(--warn); margin: 0 0 12px; font-size: 14px; }
+  button.ghost:hover:not(:disabled) { background: var(--soft); box-shadow: none; transform: none; }
+  button.link {
+    background: none; border: 0; box-shadow: none; color: var(--accent); padding: 4px 10px; font-weight: 600; font-size: 13px;
+  }
+  button.link:hover:not(:disabled) { background: var(--card); box-shadow: none; transform: none; }
+  button.link.danger { color: var(--err); }
+  button.link.danger:hover { background: var(--high); }
+  button.sm { padding: 7px 14px; font-size: 13.5px; }
   .spinner {
     display: inline-block; width: 14px; height: 14px; margin-right: 8px; vertical-align: -2px;
-    border: 2px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%;
-    animation: spin .7s linear infinite;
+    border: 2px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
-  section.block { margin-top: 32px; display: none; }
+
+  /* status / errors */
+  .progress { height: 3px; border-radius: 3px; background: var(--soft); overflow: hidden; margin-top: 16px; display: none; }
+  .progress i { display: block; height: 100%; width: 35%; border-radius: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2)); animation: slide 1.2s ease-in-out infinite; }
+  @keyframes slide { 0% { margin-left: -35%; } 100% { margin-left: 100%; } }
+  .status { color: var(--muted); font-size: 13.5px; margin-top: 8px; display: none; }
+  .error { color: var(--err); margin-top: 14px; font-size: 14px; }
+  .warn { color: var(--warn); margin: 0 0 12px; font-size: 14px; }
+  .hint { color: var(--muted); font-size: 14px; margin: 0 0 4px; }
+
+  /* results */
+  section.block { margin-top: 28px; display: none; animation: rise .35s ease both; }
+  @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
   .head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; gap: 12px; flex-wrap: wrap; }
   .head h2 { margin: 0; font-size: 18px; }
-  .head span { color: var(--muted); font-weight: 400; font-size: 14px; margin-left: 6px; }
-  .hint { color: var(--muted); font-size: 14px; margin: 0 0 14px; }
+  .head h2 span { color: var(--muted); font-weight: 400; font-size: 14px; margin-left: 6px; }
+  .tools { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+  .pills { display: flex; gap: 6px; flex-wrap: wrap; }
+  .pill {
+    padding: 5px 12px; border-radius: 999px; font-size: 13px; font-weight: 600; cursor: pointer;
+    background: var(--card); color: var(--muted); border: 1px solid var(--border); box-shadow: none;
+  }
+  .pill:hover:not(:disabled) { background: var(--soft); transform: none; box-shadow: none; }
+  .pill.active { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
+  .pill em { font-style: normal; opacity: .7; margin-left: 4px; }
+  .tools input[type=search] { max-width: 240px; margin-left: auto; padding: 8px 12px; }
   .table-wrap { overflow-x: auto; padding: 0; }
   table { width: 100%; border-collapse: collapse; }
-  th, td { text-align: left; padding: 12px 14px; vertical-align: top; border-bottom: 1px solid var(--border); }
-  th { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+  th, td { text-align: left; padding: 12px 14px; vertical-align: middle; border-bottom: 1px solid var(--border); }
+  th { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); font-weight: 600; background: var(--soft); }
+  th:first-child { border-top-left-radius: 15px; } th:last-child { border-top-right-radius: 15px; }
   th.chk, td.chk { width: 1%; padding-right: 0; }
-  input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
-  tr:last-child td { border-bottom: 0; }
-  td.id { font-weight: 600; white-space: nowrap; }
-  td .meta { color: var(--muted); font-size: 13px; margin-top: 4px; }
-  ol { margin: 0; padding-left: 18px; }
-  .badge { padding: 2px 9px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+  td.tgl { width: 1%; color: var(--muted); }
+  tr.main { cursor: pointer; transition: background .12s; }
+  tr.main:hover { background: var(--soft); }
+  tr.main.open { background: var(--accent-soft); }
+  tr.main.off td:not(.chk) { opacity: .5; }
+  tbody tr:last-child td { border-bottom: 0; }
+  td.id { font-weight: 700; white-space: nowrap; color: var(--muted); font-size: 13px; }
+  td .t { font-weight: 600; }
+  td .t.blank { color: var(--muted); font-style: italic; font-weight: 500; }
+  .tag { display: inline-block; margin-top: 3px; padding: 1px 8px; border-radius: 6px; font-size: 11.5px; font-weight: 600;
+    background: var(--soft); color: var(--muted); }
+  .chev { display: inline-block; transition: transform .2s; }
+  tr.main.open .chev { transform: rotate(90deg); }
+  tr.detail td { background: var(--accent-soft); padding: 4px 18px 16px 56px; }
+  tr.detail[hidden] { display: none; }
+  .grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 18px; font-size: 14px; }
+  .grid h4 { margin: 0 0 4px; font-size: 11.5px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+  .grid ol { margin: 0; padding-left: 18px; } .grid li { margin: 2px 0; }
+  .grid p { margin: 0 0 12px; }
+  .acts { display: flex; gap: 2px; flex-wrap: wrap; margin: 12px 0 0 -10px; }
+  .badge { padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; white-space: nowrap; }
   .High { background: var(--high); color: var(--high-t); }
   .Medium { background: var(--med); color: var(--med-t); }
   .Low { background: var(--low); color: var(--low-t); }
-  pre {
-    margin: 0; padding: 16px; overflow: auto; max-height: 560px; border-radius: 10px;
-    background: var(--code-bg); color: var(--code-t);
-    font: 13px/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
+  .empty { padding: 28px; text-align: center; color: var(--muted); }
+
+  /* edit form */
+  .form { font-size: 14px; max-width: 760px; }
+  .form label { display: block; margin-bottom: 12px; font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+  .form input, .form textarea, .form select {
+    display: block; width: 100%; max-width: none; margin-top: 4px; padding: 9px 12px; background: var(--card);
+    text-transform: none; letter-spacing: 0; font-weight: 400; font-size: 14px; color: var(--text);
   }
-  .actions { display: flex; gap: 8px; }
-  code.inline { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 1px 6px; font-size: 13px; }
+  .form textarea { min-height: 0; line-height: 1.5; }
+  .form .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form .btns { display: flex; gap: 8px; align-items: center; }
+  .form .ferr { color: var(--err); font-size: 13px; }
+
+  /* code */
+  .code-card { border-radius: 16px; overflow: hidden; border: 1px solid var(--border); box-shadow: var(--shadow); background: var(--code-bg); }
+  .code-bar { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,.08); color: #94a3b8; font-size: 13px; }
+  .dots { display: flex; gap: 6px; } .dots i { width: 10px; height: 10px; border-radius: 50%; background: #334155; }
+  pre { margin: 0; padding: 16px; overflow: auto; max-height: 560px; color: var(--code-t);
+    font: 13px/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  code.inline { background: var(--soft); border: 1px solid var(--border); border-radius: 6px; padding: 1px 6px; font-size: 12.5px; }
+
+  /* toast */
+  #toast {
+    position: fixed; left: 50%; bottom: 28px; transform: translate(-50%, 20px); opacity: 0; pointer-events: none;
+    background: var(--text); color: var(--bg); padding: 10px 18px; border-radius: 12px; font-size: 14px; font-weight: 600;
+    box-shadow: 0 10px 30px rgba(0,0,0,.25); transition: all .25s; z-index: 30;
+  }
+  #toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  @media (max-width: 640px) {
+    .grid, .form .two { grid-template-columns: 1fr; } tr.detail td { padding-left: 18px; }
+    .tools input[type=search] { max-width: none; width: 100%; margin-left: 0; }
+  }
 </style>
 </head>
 <body>
 <main>
-  <h1>Req2Test</h1>
-  <p class="sub">Paste your requirements, get test cases, then turn them into Playwright automation.</p>
+  <header class="top">
+    <div class="logo" aria-hidden="true">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+    </div>
+    <div class="brand"><h1>ReqToTest</h1><p>Requirements → test cases → automation</p></div>
+    <div class="right">
+      <button class="ghost" id="hbtn" aria-haspopup="true">History<em id="hcount">0</em></button>
+      <button class="icon-btn" id="theme" title="Toggle light / dark" aria-label="Toggle theme">☾</button>
+      <div class="panel" id="hist" hidden></div>
+    </div>
+  </header>
+
+  <div class="steps" id="steps">
+    <div class="step on" data-s="1"><b>1</b>Requirements</div>
+    <div class="step" data-s="2"><b>2</b>Test cases</div>
+    <div class="step" data-s="3"><b>3</b>Automation script</div>
+  </div>
 
   <div class="card">
-    <textarea id="req" placeholder="e.g. Users can sign in with email and password. After 5 failed attempts the account is locked for 15 minutes. Passwords must be at least 8 characters..."></textarea>
+    <textarea id="req" placeholder="Describe what the feature should do. e.g. Users can sign in with email and password. After 5 failed attempts the account is locked for 15 minutes…"></textarea>
+    <div class="meta-line"><span id="chars">0 characters</span><span>Tip: Ctrl + Enter to generate</span></div>
+    <div class="chips">
+      <span>Try an example:</span>
+      <button class="chip" data-ex="login">Login</button>
+      <button class="chip" data-ex="signup">Sign up</button>
+      <button class="chip" data-ex="cart">Shopping cart</button>
+    </div>
     <div class="row">
       <select id="model" aria-label="Model"></select>
       <select id="count" aria-label="Coverage">
@@ -112,31 +278,42 @@
       <div class="spacer"></div>
       <button id="gen">Generate test cases</button>
     </div>
+    <div class="progress" id="prog"><i></i></div>
+    <div class="status" id="status"></div>
     <div id="error" class="error" hidden></div>
   </div>
 
   <section id="results" class="block">
     <div class="head">
       <h2>Test cases <span id="count-label"></span></h2>
-      <button id="dl" class="ghost">Download Excel</button>
+      <div class="actions" style="display:flex;gap:8px;flex-wrap:wrap">
+        <button id="add" class="ghost">+ Add test case</button>
+        <button id="toggle-all" class="ghost">Expand all</button>
+        <button id="dl" class="ghost">Download Excel</button>
+      </div>
+    </div>
+    <div class="tools">
+      <div class="pills" id="pills"></div>
+      <input type="search" id="q" placeholder="Search test cases…" aria-label="Search">
     </div>
     <div class="card table-wrap">
       <table>
         <thead><tr>
           <th class="chk"><input type="checkbox" id="all" checked aria-label="Select all"></th>
-          <th>ID</th><th>Test case</th><th>Priority</th><th>Steps</th><th>Expected result</th>
+          <th>ID</th><th>Test case</th><th>Priority</th><th></th>
         </tr></thead>
         <tbody id="rows"></tbody>
       </table>
     </div>
 
     <div class="card" style="margin-top:20px">
-      <div class="head" style="margin-bottom:6px"><h2>Automate with Playwright</h2></div>
-      <p class="hint">Enter the URL of your web app. The page is opened to find its real fields and buttons, then a Python script is written for the selected test cases.</p>
+      <h2>Automate with Playwright</h2>
+      <p class="hint">Enter your app's URL. We open the page, find its real fields and buttons, and write a script for the selected test cases.</p>
       <div class="row first">
         <input type="text" id="url" placeholder="https://your-app.com or http://localhost:3000" style="flex:1; min-width:240px">
         <button id="pw">Generate script</button>
       </div>
+      <div class="progress" id="prog2"><i></i></div>
       <div id="pw-error" class="error" hidden></div>
     </div>
   </section>
@@ -144,71 +321,311 @@
   <section id="script" class="block">
     <div class="head">
       <h2>Playwright script <span id="script-meta"></span></h2>
-      <div class="actions">
-        <button id="copy" class="ghost">Copy</button>
-        <button id="dlpy">Download .py</button>
-      </div>
     </div>
     <p id="script-warn" class="warn" hidden></p>
-    <pre><code id="code"></code></pre>
+    <div class="code-card">
+      <div class="code-bar">
+        <div class="dots"><i></i><i></i><i></i></div>
+        <span style="margin-left:6px">test_app.py</span>
+        <span class="spacer"></span>
+        <button id="copy" class="ghost" style="padding:5px 12px;font-size:13px;background:transparent;color:#e2e8f0;border-color:#334155">Copy</button>
+        <button id="dlpy" style="padding:5px 12px;font-size:13px">Download .py</button>
+      </div>
+      <pre><code id="code"></code></pre>
+    </div>
     <p class="hint" style="margin-top:12px">Run it: <code class="inline">pip install pytest-playwright</code> · <code class="inline">playwright install chromium</code> · <code class="inline">pytest test_app.py --headed</code></p>
   </section>
 </main>
+<div id="toast" role="status"></div>
 
 <script>
 const $ = id => document.getElementById(id);
-let cases = [];
-
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch {} }
+};
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const picked = () => [...document.querySelectorAll(".pick:checked")].map(cb => cases[+cb.dataset.i]);
 
+const EXAMPLES = {
+  login: "Users sign in with email and password.\n- Email must be a valid format.\n- Password must be at least 8 characters.\n- After 5 failed attempts the account is locked for 15 minutes.\n- A 'Forgot password' link sends a reset email.\n- Successful login redirects to the dashboard.",
+  signup: "New users can register with name, email, password and confirm password.\n- Email must be unique.\n- Password needs 8+ characters, one number and one uppercase letter.\n- Passwords must match.\n- A verification email is sent after sign up.\n- The user must accept the terms and conditions.",
+  cart: "Shoppers can add products to a cart.\n- Quantity can be 1 to 10 per product.\n- Cart shows subtotal, 5% tax and total.\n- A valid coupon code gives 10% off once per order.\n- Items can be removed or quantities updated.\n- Out-of-stock items cannot be added."
+};
+const TYPES = ["Functional", "Negative", "Boundary", "Edge", "Security", "Usability", "Performance"];
+const PRIORITIES = ["High", "Medium", "Low"];
+
+let cases = [];          // working copy: test cases + UI flags (_sel, _open, _edit, _new, _draft)
+let currentRun = null;   // history entry that the current cases belong to
+const f = { pri: "All", q: "" };
+
+/* ---------- small UI helpers ---------- */
+function toast(msg) {
+  const t = $("toast"); t.textContent = msg; t.classList.add("show");
+  clearTimeout(toast.id); toast.id = setTimeout(() => t.classList.remove("show"), 2000);
+}
 function showError(el, msg) { el.textContent = msg; el.hidden = !msg; }
 function busy(btn, label) { btn.disabled = true; btn.innerHTML = `<span class="spinner"></span>${label}`; }
 function idle(btn, label) { btn.disabled = false; btn.textContent = label; }
+function setStep(n) {
+  document.querySelectorAll(".step").forEach(el => {
+    const s = +el.dataset.s;
+    el.classList.toggle("on", s === n);
+    el.classList.toggle("done", s < n);
+    el.querySelector("b").textContent = s < n ? "✓" : s;
+  });
+}
+function loading(on, bar, messages, statusEl) {
+  clearInterval(loading.t);
+  bar.style.display = on ? "block" : "none";
+  if (!statusEl) return;
+  statusEl.style.display = on ? "block" : "none";
+  if (on) {
+    let i = 0; statusEl.textContent = messages[0];
+    loading.t = setInterval(() => statusEl.textContent = messages[i = Math.min(i + 1, messages.length - 1)], 5000);
+  }
+}
+function save(blob, name) {
+  const url = URL.createObjectURL(blob);
+  Object.assign(document.createElement("a"), {href: url, download: name}).click();
+  URL.revokeObjectURL(url);
+}
+const clean = ({_sel, _open, _edit, _new, _draft, ...c}) => c;
+const real = () => cases.filter(c => !c._new);   // unsaved blank cases are ignored
 
+/* ---------- theme ---------- */
+function applyTheme(t) {
+  if (t) document.documentElement.dataset.theme = t; else delete document.documentElement.dataset.theme;
+  const dark = t ? t === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+  $("theme").textContent = dark ? "☀" : "☾";
+}
+applyTheme(store.get("theme"));
+$("theme").onclick = () => {
+  const dark = document.documentElement.dataset.theme
+    ? document.documentElement.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+  const next = dark ? "light" : "dark"; store.set("theme", next); applyTheme(next);
+};
+
+/* ---------- history (kept in this browser only) ---------- */
+let hist = [];
+try { hist = JSON.parse(store.get("history") || "[]"); if (!Array.isArray(hist)) hist = []; } catch { hist = []; }
+const saveHist = () => { store.set("history", JSON.stringify(hist)); renderHist(); };
+const persist = () => {
+  if (!currentRun) return;
+  currentRun.cases = real().map(clean); currentRun.count = currentRun.cases.length; saveHist();
+};
+function ago(ts) {
+  const m = Math.round((Date.now() - ts) / 60000);
+  if (m < 1) return "just now"; if (m < 60) return `${m} min ago`;
+  if (m < 1440) return `${Math.round(m / 60)} h ago`;
+  return new Date(ts).toLocaleDateString([], {month: "short", day: "numeric"});
+}
+function renderHist() {
+  $("hcount").textContent = hist.length;
+  $("hist").innerHTML = `<div class="ph"><span>Recent runs</span>${hist.length ? '<button class="link danger" id="hclear">Clear all</button>' : ""}</div>` +
+    (hist.length ? hist.map(r => `
+      <div class="run" data-id="${esc(r.id)}">
+        <div class="info"><div class="rt">${esc((r.requirements || "").replace(/\s+/g, " ").slice(0, 70) || "Untitled")}</div>
+        <div class="rm">${r.count} test cases · ${ago(r.ts)}</div></div>
+        <button class="x" title="Delete" aria-label="Delete run">×</button>
+      </div>`).join("") : `<div class="none">No saved runs yet.<br>Generated test cases appear here.</div>`);
+}
+function loadRun(id) {
+  const r = hist.find(x => x.id === id); if (!r) return;
+  currentRun = r;
+  cases = r.cases.map(c => ({...c, _sel: true, _open: false}));
+  $("req").value = r.requirements || ""; updateChars();
+  f.pri = "All"; f.q = ""; $("q").value = "";
+  render();
+  $("results").style.display = "block"; $("script").style.display = "none";
+  setStep(2); $("hist").hidden = true;
+  toast(`Loaded ${cases.length} test cases`);
+  $("results").scrollIntoView({behavior: "smooth"});
+}
+$("hbtn").onclick = e => { e.stopPropagation(); renderHist(); $("hist").hidden = !$("hist").hidden; };
+$("hist").onclick = e => {
+  e.stopPropagation();
+  if (e.target.id === "hclear") { hist = []; currentRun = null; saveHist(); return toast("History cleared"); }
+  const run = e.target.closest(".run"); if (!run) return;
+  if (e.target.closest(".x")) {
+    hist = hist.filter(x => x.id !== run.dataset.id);
+    if (currentRun && currentRun.id === run.dataset.id) currentRun = null;
+    saveHist(); return;
+  }
+  loadRun(run.dataset.id);
+};
+document.addEventListener("click", () => { $("hist").hidden = true; });
+document.addEventListener("keydown", e => { if (e.key === "Escape") $("hist").hidden = true; });
+
+/* ---------- inputs ---------- */
 fetch("/api/models").then(r => r.json()).then(list => {
   $("model").innerHTML = list.length
     ? list.map(m => `<option>${esc(m)}</option>`).join("")
     : `<option value="">Default model</option>`;
+  const saved = store.get("model"); if (saved && list.includes(saved)) $("model").value = saved;
 });
+$("model").onchange = () => store.set("model", $("model").value);
+$("url").value = store.get("url") || "";
 
-function updatePicked() {
+const updateChars = () => $("chars").textContent = `${$("req").value.length} characters`;
+$("req").oninput = updateChars;
+$("req").onkeydown = e => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) $("gen").click(); };
+document.querySelectorAll(".chip").forEach(c => c.onclick = () => {
+  $("req").value = EXAMPLES[c.dataset.ex]; updateChars(); $("req").focus();
+});
+renderHist();
+
+/* ---------- results table ---------- */
+const cls = p => PRIORITIES.includes(p) ? p : "Medium";
+const visible = () => cases.filter(c =>
+  (f.pri === "All" || c.priority === f.pri) &&
+  (!f.q || [c.id, c.title, c.type, c.expected_result, ...c.steps].join(" ").toLowerCase().includes(f.q)));
+const picked = () => real().filter(c => c._sel);
+const detailRow = id => $("rows").querySelector(`tr.detail[data-for="${CSS.escape(id)}"]`);
+
+function renderPills() {
+  const list = real();
+  const n = p => p === "All" ? list.length : list.filter(c => c.priority === p).length;
+  $("pills").innerHTML = ["All", ...PRIORITIES].map(p =>
+    `<button class="pill ${f.pri === p ? "active" : ""}" data-p="${p}">${p}<em>${n(p)}</em></button>`).join("");
+}
+
+const opts = (list, cur) => (list.includes(cur) ? list : [...list, cur]).map(v =>
+  `<option ${v === cur ? "selected" : ""}>${esc(v)}</option>`).join("");
+
+function formHTML(c) {
+  const d = c._draft || {title: c.title, type: c.type, priority: c.priority,
+    preconditions: c.preconditions, steps: c.steps.join("\n"), expected_result: c.expected_result};
+  return `<div class="form">
+    <label>Title<input type="text" data-f="title" value="${esc(d.title)}" placeholder="What is being tested?"></label>
+    <div class="two">
+      <label>Type<select data-f="type">${opts(TYPES, d.type)}</select></label>
+      <label>Priority<select data-f="priority">${opts(PRIORITIES, d.priority)}</select></label>
+    </div>
+    <label>Preconditions<textarea data-f="preconditions" rows="2">${esc(d.preconditions)}</textarea></label>
+    <label>Steps (one per line)<textarea data-f="steps" rows="4">${esc(d.steps)}</textarea></label>
+    <label>Expected result<textarea data-f="expected_result" rows="2">${esc(d.expected_result)}</textarea></label>
+    <div class="btns"><button class="save sm">Save</button><button class="ghost cancel sm">Cancel</button><span class="ferr"></span></div>
+  </div>`;
+}
+function viewHTML(c) {
+  return `<div class="grid">
+    <div><h4>Steps</h4><ol>${c.steps.map(s => `<li>${esc(s)}</li>`).join("")}</ol></div>
+    <div>
+      ${c.preconditions ? `<h4>Preconditions</h4><p>${esc(c.preconditions)}</p>` : ""}
+      <h4>Expected result</h4><p>${esc(c.expected_result)}</p>
+    </div></div>
+    <div class="acts">
+      <button class="link edit">Edit</button>
+      <button class="link dup">Duplicate</button>
+      <button class="link danger remove">Remove</button>
+    </div>`;
+}
+
+function stashDrafts() {            // keep unsaved edits when the table re-renders
+  cases.filter(c => c._edit).forEach(c => {
+    const tr = detailRow(c.id);
+    if (tr && tr.querySelector(".form")) c._draft = readForm(tr, false);  // only if the form is on screen
+  });
+}
+function readForm(tr, parse = true) {
+  const v = k => tr.querySelector(`[data-f="${k}"]`).value;
+  const o = {title: v("title").trim(), type: v("type"), priority: v("priority"),
+    preconditions: v("preconditions").trim(), steps: v("steps"), expected_result: v("expected_result").trim()};
+  if (parse) o.steps = o.steps.split("\n").map(s => s.trim()).filter(Boolean);
+  return o;
+}
+
+function renderRows() {
+  stashDrafts();
+  const list = visible(), all = real();
+  $("rows").innerHTML = list.length ? list.map(c => `
+    <tr class="main ${c._open ? "open" : ""} ${c._sel ? "" : "off"}" data-id="${esc(c.id)}">
+      <td class="chk"><input type="checkbox" class="pick" ${c._sel ? "checked" : ""} aria-label="Select ${esc(c.id)}"></td>
+      <td class="id">${esc(c.id)}</td>
+      <td>${(c._draft ? c._draft.title : c.title)
+          ? `<div class="t">${esc(c._draft ? c._draft.title : c.title)}</div>` : `<div class="t blank">New test case</div>`}
+        <span class="tag">${esc(c._draft ? c._draft.type : c.type)}</span></td>
+      <td><span class="badge ${cls(c._draft ? c._draft.priority : c.priority)}">${esc(c._draft ? c._draft.priority : c.priority)}</span></td>
+      <td class="tgl"><span class="chev">›</span></td>
+    </tr>
+    <tr class="detail" data-for="${esc(c.id)}" ${c._open ? "" : "hidden"}><td colspan="5">
+      ${c._edit ? formHTML(c) : viewHTML(c)}
+    </td></tr>`).join("")
+    : `<tr><td colspan="5" class="empty">${all.length ? "No test cases match your filter." : "No test cases yet. Click “+ Add test case”."}</td></tr>`;
+  const vis = visible().filter(c => !c._new);
+  const nSel = vis.filter(c => c._sel).length;
+  $("all").checked = vis.length > 0 && nSel === vis.length;
+  $("all").indeterminate = nSel > 0 && nSel < vis.length;
+  $("count-label").textContent = `(${all.length})`;
   const n = picked().length;
-  $("all").checked = n === cases.length;
-  $("all").indeterminate = n > 0 && n < cases.length;
   $("pw").disabled = n === 0;
   $("pw").textContent = `Generate script (${n})`;
+  $("toggle-all").textContent = cases.length && cases.every(c => c._open) ? "Collapse all" : "Expand all";
 }
+const render = () => { renderPills(); renderRows(); };
 
-function render() {
-  $("count-label").textContent = `(${cases.length})`;
-  $("rows").innerHTML = cases.map((c, i) => `
-    <tr>
-      <td class="chk"><input type="checkbox" class="pick" data-i="${i}" checked aria-label="Select ${esc(c.id)}"></td>
-      <td class="id">${esc(c.id)}</td>
-      <td><strong>${esc(c.title)}</strong>
-        <div class="meta">${esc(c.type)}${c.preconditions ? " · " + esc(c.preconditions) : ""}</div></td>
-      <td><span class="badge ${esc(c.priority)}">${esc(c.priority)}</span></td>
-      <td><ol>${c.steps.map(s => `<li>${esc(s)}</li>`).join("")}</ol></td>
-      <td>${esc(c.expected_result)}</td>
-    </tr>`).join("");
-  $("results").style.display = "block";
-  $("script").style.display = "none";
-  showError($("pw-error"), "");
-  updatePicked();
-}
-
-$("rows").addEventListener("change", updatePicked);
-$("all").onchange = e => {
-  document.querySelectorAll(".pick").forEach(cb => cb.checked = e.target.checked);
-  updatePicked();
+$("pills").onclick = e => {
+  const b = e.target.closest(".pill"); if (!b) return;
+  f.pri = b.dataset.p; render();
+};
+$("q").oninput = e => { f.q = e.target.value.trim().toLowerCase(); renderRows(); };
+$("all").onchange = e => { visible().forEach(c => c._sel = e.target.checked); renderRows(); };
+$("toggle-all").onclick = () => {
+  const open = !cases.every(c => c._open); cases.forEach(c => c._open = c._edit ? true : open); renderRows();
 };
 
+const nextId = () => "TC" + String(Math.max(0, ...cases.map(c => parseInt(c.id.replace(/\D/g, "")) || 0)) + 1).padStart(3, "0");
+
+$("add").onclick = () => {
+  f.pri = "All"; f.q = ""; $("q").value = "";
+  const c = {id: nextId(), title: "", type: "Functional", priority: "Medium", preconditions: "", steps: [],
+    expected_result: "", _sel: true, _open: true, _edit: true, _new: true};
+  cases.push(c); render();
+  const tr = detailRow(c.id);
+  tr.scrollIntoView({behavior: "smooth", block: "center"});
+  tr.querySelector('[data-f="title"]').focus();
+};
+
+$("rows").onclick = e => {
+  const tr = e.target.closest("tr"); if (!tr) return;
+  const id = tr.dataset.id || tr.dataset.for;
+  const c = cases.find(x => x.id === id); if (!c) return;
+  const on = sel => e.target.closest(sel);
+
+  if (on(".remove")) { cases = cases.filter(x => x !== c); persist(); toast(`Removed ${c.id}`); return render(); }
+  if (on(".edit")) { c._edit = true; render(); return detailRow(c.id).querySelector('[data-f="title"]').focus(); }
+  if (on(".dup")) {
+    const copy = {...clean(c), id: nextId(), title: c.title + " (copy)", steps: [...c.steps],
+      _sel: true, _open: true, _edit: false};
+    cases.splice(cases.indexOf(c) + 1, 0, copy); persist(); render(); toast(`Duplicated as ${copy.id}`);
+    return detailRow(copy.id).scrollIntoView({behavior: "smooth", block: "center"});
+  }
+  if (on(".cancel")) {
+    if (c._new) cases = cases.filter(x => x !== c); else { c._edit = false; delete c._draft; }
+    return render();
+  }
+  if (on(".save")) {
+    const d = readForm(tr);
+    if (!d.title) { tr.querySelector(".ferr").textContent = "Please enter a title."; return tr.querySelector('[data-f="title"]').focus(); }
+    Object.assign(c, d); c._edit = false; delete c._new; delete c._draft;
+    persist(); render(); return toast(`Saved ${c.id}`);
+  }
+  if (e.target.classList.contains("pick")) { c._sel = e.target.checked; return renderRows(); }
+  if (tr.classList.contains("main") && !c._edit) {
+    c._open = !c._open;
+    tr.classList.toggle("open", c._open);
+    tr.nextElementSibling.hidden = !c._open;
+    $("toggle-all").textContent = cases.every(x => x._open) ? "Collapse all" : "Expand all";
+  }
+};
+
+/* ---------- generate test cases ---------- */
 $("gen").onclick = async () => {
   const requirements = $("req").value.trim();
   showError($("error"), "");
   if (!requirements) return showError($("error"), "Please enter some requirements.");
   busy($("gen"), "Generating…");
+  loading(true, $("prog"), ["Reading your requirements…", "Designing test cases…", "Adding negative and edge cases…", "Almost there…"], $("status"));
   try {
     const res = await fetch("/api/generate", {
       method: "POST", headers: {"Content-Type": "application/json"},
@@ -216,33 +633,48 @@ $("gen").onclick = async () => {
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "Something went wrong.");
-    cases = data.test_cases;
+    cases = data.test_cases.map(c => ({...c, _sel: true, _open: false}));
+    currentRun = {id: String(Date.now()), ts: Date.now(), requirements, model: $("model").value,
+      count: cases.length, cases: cases.map(clean)};
+    hist = [currentRun, ...hist].slice(0, 8); saveHist();
+    f.pri = "All"; f.q = ""; $("q").value = "";
     render();
+    $("results").style.display = "block";
+    $("script").style.display = "none";
+    showError($("pw-error"), "");
+    setStep(2);
+    toast(`${cases.length} test cases ready`);
     $("results").scrollIntoView({behavior: "smooth"});
   } catch (e) {
     showError($("error"), e.message);
   } finally {
+    loading(false, $("prog"), [], $("status"));
     idle($("gen"), "Generate test cases");
   }
 };
 
 $("dl").onclick = async () => {
+  if (!real().length) return toast("Nothing to download yet");
   const res = await fetch("/api/download", {
     method: "POST", headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({test_cases: cases})
+    body: JSON.stringify({test_cases: real().map(clean)})
   });
   save(await res.blob(), "test_cases.xlsx");
+  toast("Excel downloaded");
 };
 
+/* ---------- playwright script ---------- */
 $("pw").onclick = async () => {
   const url = $("url").value.trim();
   showError($("pw-error"), "");
   if (!url) return showError($("pw-error"), "Please enter your app's URL.");
+  store.set("url", url);
   busy($("pw"), "Reading page & writing script…");
+  loading(true, $("prog2"), []);
   try {
     const res = await fetch("/api/playwright", {
       method: "POST", headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({url, test_cases: picked(), model: $("model").value})
+      body: JSON.stringify({url, model: $("model").value, test_cases: picked().map(clean)})
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "Something went wrong.");
@@ -251,27 +683,23 @@ $("pw").onclick = async () => {
     $("script-warn").textContent = data.warning || "";
     $("script-warn").hidden = !data.warning;
     $("script").style.display = "block";
+    setStep(3);
+    toast("Script ready");
     $("script").scrollIntoView({behavior: "smooth"});
   } catch (e) {
     showError($("pw-error"), e.message);
   } finally {
-    updatePicked();
+    loading(false, $("prog2"), []);
+    renderRows();
   }
 };
 
 $("copy").onclick = async () => {
   try { await navigator.clipboard.writeText($("code").textContent); }
   catch { const r = document.createRange(); r.selectNode($("code")); getSelection().removeAllRanges(); getSelection().addRange(r); document.execCommand("copy"); }
-  $("copy").textContent = "Copied ✓";
-  setTimeout(() => $("copy").textContent = "Copy", 1500);
+  toast("Copied to clipboard");
 };
-$("dlpy").onclick = () => save(new Blob([$("code").textContent], {type: "text/x-python"}), "test_app.py");
-
-function save(blob, name) {
-  const url = URL.createObjectURL(blob);
-  Object.assign(document.createElement("a"), {href: url, download: name}).click();
-  URL.revokeObjectURL(url);
-}
+$("dlpy").onclick = () => { save(new Blob([$("code").textContent], {type: "text/x-python"}), "test_app.py"); toast("Script downloaded"); };
 </script>
 </body>
 </html>
