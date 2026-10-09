@@ -1,0 +1,6 @@
+flask>=3.0
+mcp>=1.2
+openpyxl>=3.1
+requests>=2.31
+playwright>=1.40
+pytest-playwright>=0.4

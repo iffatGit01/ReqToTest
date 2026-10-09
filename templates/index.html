@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Test Case Generator</title>
+<style>
+  :root {
+    --bg: #f8fafc; --card: #ffffff; --text: #0f172a; --muted: #64748b;
+    --border: #e2e8f0; --accent: #4f46e5; --accent-hover: #4338ca;
+    --high: #fee2e2; --high-t: #b91c1c; --med: #fef3c7; --med-t: #b45309;
+    --low: #dcfce7; --low-t: #15803d; --err: #b91c1c; --warn: #b45309;
+    --code-bg: #0f172a; --code-t: #e2e8f0;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0b1020; --card: #131a2e; --text: #e5e7eb; --muted: #94a3b8;
+      --border: #25304d; --accent: #6366f1; --accent-hover: #818cf8;
+      --high: #4c1d1d; --high-t: #fca5a5; --med: #4a3410; --med-t: #fcd34d;
+      --low: #123524; --low-t: #86efac; --err: #fca5a5; --warn: #fcd34d;
+      --code-bg: #070b17; --code-t: #e5e7eb;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif;
+  }
+  main { max-width: 960px; margin: 0 auto; padding: 48px 20px 80px; }
+  h1 { font-size: 26px; margin: 0 0 4px; letter-spacing: -0.02em; }
+  .sub { color: var(--muted); margin: 0 0 28px; }
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 14px; padding: 20px;
+  }
+  textarea, input[type=text] {
+    width: 100%; padding: 12px 14px;
+    border: 1px solid var(--border); border-radius: 10px;
+    background: transparent; color: inherit; font: inherit;
+  }
+  textarea { min-height: 160px; resize: vertical; padding: 14px; }
+  textarea:focus, select:focus, input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .row { display: flex; gap: 12px; align-items: center; margin-top: 14px; flex-wrap: wrap; }
+  .row.first { margin-top: 0; }
+  .spacer { flex: 1; }
+  select {
+    padding: 9px 12px; border-radius: 10px; border: 1px solid var(--border);
+    background: transparent; color: inherit; font: inherit; max-width: 220px;
+  }
+  select option { color: #0f172a; }
+  button {
+    border: 0; border-radius: 10px; padding: 10px 18px; font: inherit; font-weight: 600;
+    cursor: pointer; background: var(--accent); color: #fff; transition: background .15s;
+    white-space: nowrap;
+  }
+  button:hover:not(:disabled) { background: var(--accent-hover); }
+  button:disabled { opacity: .55; cursor: not-allowed; }
+  button.ghost {
+    background: transparent; color: var(--text); border: 1px solid var(--border);
+  }
+  button.ghost:hover:not(:disabled) { background: var(--bg); }
+  .error { color: var(--err); margin-top: 14px; }
+  .warn { color: var(--warn); margin: 0 0 12px; font-size: 14px; }
+  .spinner {
+    display: inline-block; width: 14px; height: 14px; margin-right: 8px; vertical-align: -2px;
+    border: 2px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%;
+    animation: spin .7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  section.block { margin-top: 32px; display: none; }
+  .head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; gap: 12px; flex-wrap: wrap; }
+  .head h2 { margin: 0; font-size: 18px; }
+  .head span { color: var(--muted); font-weight: 400; font-size: 14px; margin-left: 6px; }
+  .hint { color: var(--muted); font-size: 14px; margin: 0 0 14px; }
+  .table-wrap { overflow-x: auto; padding: 0; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 12px 14px; vertical-align: top; border-bottom: 1px solid var(--border); }
+  th { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+  th.chk, td.chk { width: 1%; padding-right: 0; }
+  input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
+  tr:last-child td { border-bottom: 0; }
+  td.id { font-weight: 600; white-space: nowrap; }
+  td .meta { color: var(--muted); font-size: 13px; margin-top: 4px; }
+  ol { margin: 0; padding-left: 18px; }
+  .badge { padding: 2px 9px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+  .High { background: var(--high); color: var(--high-t); }
+  .Medium { background: var(--med); color: var(--med-t); }
+  .Low { background: var(--low); color: var(--low-t); }
+  pre {
+    margin: 0; padding: 16px; overflow: auto; max-height: 560px; border-radius: 10px;
+    background: var(--code-bg); color: var(--code-t);
+    font: 13px/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  .actions { display: flex; gap: 8px; }
+  code.inline { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 1px 6px; font-size: 13px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Req2Test</h1>
+  <p class="sub">Paste your requirements, get test cases, then turn them into Playwright automation.</p>
+
+  <div class="card">
+    <textarea id="req" placeholder="e.g. Users can sign in with email and password. After 5 failed attempts the account is locked for 15 minutes. Passwords must be at least 8 characters..."></textarea>
+    <div class="row">
+      <select id="model" aria-label="Model"></select>
+      <select id="count" aria-label="Coverage">
+        <option value="8">Quick · ~8 cases</option>
+        <option value="15" selected>Standard · ~15 cases</option>
+        <option value="25">Thorough · ~25 cases</option>
+      </select>
+      <div class="spacer"></div>
+      <button id="gen">Generate test cases</button>
+    </div>
+    <div id="error" class="error" hidden></div>
+  </div>
+
+  <section id="results" class="block">
+    <div class="head">
+      <h2>Test cases <span id="count-label"></span></h2>
+      <button id="dl" class="ghost">Download Excel</button>
+    </div>
+    <div class="card table-wrap">
+      <table>
+        <thead><tr>
+          <th class="chk"><input type="checkbox" id="all" checked aria-label="Select all"></th>
+          <th>ID</th><th>Test case</th><th>Priority</th><th>Steps</th><th>Expected result</th>
+        </tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+
+    <div class="card" style="margin-top:20px">
+      <div class="head" style="margin-bottom:6px"><h2>Automate with Playwright</h2></div>
+      <p class="hint">Enter the URL of your web app. The page is opened to find its real fields and buttons, then a Python script is written for the selected test cases.</p>
+      <div class="row first">
+        <input type="text" id="url" placeholder="https://your-app.com or http://localhost:3000" style="flex:1; min-width:240px">
+        <button id="pw">Generate script</button>
+      </div>
+      <div id="pw-error" class="error" hidden></div>
+    </div>
+  </section>
+
+  <section id="script" class="block">
+    <div class="head">
+      <h2>Playwright script <span id="script-meta"></span></h2>
+      <div class="actions">
+        <button id="copy" class="ghost">Copy</button>
+        <button id="dlpy">Download .py</button>
+      </div>
+    </div>
+    <p id="script-warn" class="warn" hidden></p>
+    <pre><code id="code"></code></pre>
+    <p class="hint" style="margin-top:12px">Run it: <code class="inline">pip install pytest-playwright</code> · <code class="inline">playwright install chromium</code> · <code class="inline">pytest test_app.py --headed</code></p>
+  </section>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+let cases = [];
+
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const picked = () => [...document.querySelectorAll(".pick:checked")].map(cb => cases[+cb.dataset.i]);
+
+function showError(el, msg) { el.textContent = msg; el.hidden = !msg; }
+function busy(btn, label) { btn.disabled = true; btn.innerHTML = `<span class="spinner"></span>${label}`; }
+function idle(btn, label) { btn.disabled = false; btn.textContent = label; }
+
+fetch("/api/models").then(r => r.json()).then(list => {
+  $("model").innerHTML = list.length
+    ? list.map(m => `<option>${esc(m)}</option>`).join("")
+    : `<option value="">Default model</option>`;
+});
+
+function updatePicked() {
+  const n = picked().length;
+  $("all").checked = n === cases.length;
+  $("all").indeterminate = n > 0 && n < cases.length;
+  $("pw").disabled = n === 0;
+  $("pw").textContent = `Generate script (${n})`;
+}
+
+function render() {
+  $("count-label").textContent = `(${cases.length})`;
+  $("rows").innerHTML = cases.map((c, i) => `
+    <tr>
+      <td class="chk"><input type="checkbox" class="pick" data-i="${i}" checked aria-label="Select ${esc(c.id)}"></td>
+      <td class="id">${esc(c.id)}</td>
+      <td><strong>${esc(c.title)}</strong>
+        <div class="meta">${esc(c.type)}${c.preconditions ? " · " + esc(c.preconditions) : ""}</div></td>
+      <td><span class="badge ${esc(c.priority)}">${esc(c.priority)}</span></td>
+      <td><ol>${c.steps.map(s => `<li>${esc(s)}</li>`).join("")}</ol></td>
+      <td>${esc(c.expected_result)}</td>
+    </tr>`).join("");
+  $("results").style.display = "block";
+  $("script").style.display = "none";
+  showError($("pw-error"), "");
+  updatePicked();
+}
+
+$("rows").addEventListener("change", updatePicked);
+$("all").onchange = e => {
+  document.querySelectorAll(".pick").forEach(cb => cb.checked = e.target.checked);
+  updatePicked();
+};
+
+$("gen").onclick = async () => {
+  const requirements = $("req").value.trim();
+  showError($("error"), "");
+  if (!requirements) return showError($("error"), "Please enter some requirements.");
+  busy($("gen"), "Generating…");
+  try {
+    const res = await fetch("/api/generate", {
+      method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({requirements, model: $("model").value, count: +$("count").value})
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Something went wrong.");
+    cases = data.test_cases;
+    render();
+    $("results").scrollIntoView({behavior: "smooth"});
+  } catch (e) {
+    showError($("error"), e.message);
+  } finally {
+    idle($("gen"), "Generate test cases");
+  }
+};
+
+$("dl").onclick = async () => {
+  const res = await fetch("/api/download", {
+    method: "POST", headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({test_cases: cases})
+  });
+  save(await res.blob(), "test_cases.xlsx");
+};
+
+$("pw").onclick = async () => {
+  const url = $("url").value.trim();
+  showError($("pw-error"), "");
+  if (!url) return showError($("pw-error"), "Please enter your app's URL.");
+  busy($("pw"), "Reading page & writing script…");
+  try {
+    const res = await fetch("/api/playwright", {
+      method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({url, test_cases: picked(), model: $("model").value})
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Something went wrong.");
+    $("code").textContent = data.script;
+    $("script-meta").textContent = `· ${data.elements} page elements found`;
+    $("script-warn").textContent = data.warning || "";
+    $("script-warn").hidden = !data.warning;
+    $("script").style.display = "block";
+    $("script").scrollIntoView({behavior: "smooth"});
+  } catch (e) {
+    showError($("pw-error"), e.message);
+  } finally {
+    updatePicked();
+  }
+};
+
+$("copy").onclick = async () => {
+  try { await navigator.clipboard.writeText($("code").textContent); }
+  catch { const r = document.createRange(); r.selectNode($("code")); getSelection().removeAllRanges(); getSelection().addRange(r); document.execCommand("copy"); }
+  $("copy").textContent = "Copied ✓";
+  setTimeout(() => $("copy").textContent = "Copy", 1500);
+};
+$("dlpy").onclick = () => save(new Blob([$("code").textContent], {type: "text/x-python"}), "test_app.py");
+
+function save(blob, name) {
+  const url = URL.createObjectURL(blob);
+  Object.assign(document.createElement("a"), {href: url, download: name}).click();
+  URL.revokeObjectURL(url);
+}
+</script>
+</body>
+</html>

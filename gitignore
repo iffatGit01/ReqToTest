@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+
+# Tools / editors
+.pytest_cache/
+.vscode/
+.idea/
+.DS_Store
+
+# Playwright output
+test-results/
+playwright-report/
+
+# Generated files
+test_cases.xlsx
+test_app.py
